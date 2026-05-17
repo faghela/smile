@@ -1,0 +1,17 @@
+# Node
+node_modules/
+
+# Environment Variables - مهم جداً! لا ترفع هذا الملف أبداً
+.env
+
+# Uploads - الصور المرفوعة (يتم توليدها تلقائياً)
+public/uploads/*
+!public/uploads/.gitkeep
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db

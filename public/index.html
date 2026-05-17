@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smile Shop | تسوق بسعادة - 2026</title>
+<meta name="description" content="متجر Smile Shop - تجربة تسوق استثنائية">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="/config.js"></script>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<header id="mainHeader">
+  <div class="header-inner">
+    <div class="logo">Smile Shop✨</div>
+    
+    <div class="search-trigger" onclick="openSearch()">
+      <i class="fa fa-search"></i>
+      <span>ابحث عن العطور، الساعات، الملابس...</span>
+    </div>
+
+    <div class="header-actions">
+      <a href="/track.html" class="track-link">
+        <i class="fa fa-map-marker-alt"></i>
+        <span>تتبع الطلب</span>
+      </a>
+      <div class="mag-btn-wrap" onmousemove="magnetEffect(event, this)" onmouseleave="resetMagnet(this)">
+        <button class="cart-btn" onclick="openCart()">
+          <i class="fa fa-shopping-bag"></i>
+          <span class="cart-badge" id="cartBadge">0</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="hero" id="heroSection" onmousemove="moveGlow(event)">
+  <div class="hero-glow" id="heroGlow"></div>
+  <h1>تجربة تسوق<br>تليق بعام 2026</h1>
+  <p>اكتشف مجموعتنا الحصرية المنسقة بعناية، حيث تلتقي الجودة الفائقة بالتصميم المذهل لتمنحك سعادة لا تُنسى.</p>
+</div>
+
+<div class="cats" id="catBar">
+  <button class="cat-btn active" onclick="filterCat('الكل',this)">الكل</button>
+</div>
+
+<div class="products-section">
+  <div class="products-grid" id="productsGrid" onmousemove="handleCardsGlow(event)">
+    <div class="skeleton"></div><div class="skeleton"></div>
+    <div class="skeleton"></div><div class="skeleton"></div>
+  </div>
+  <div style="text-align:center; margin-top: 3rem;">
+    <button id="loadMoreBtn" class="cart-btn" style="display:none; margin:0 auto; padding: 1rem 3rem;" onclick="loadMoreProducts()">
+      <i class="fa fa-arrow-down"></i> عرض المزيد
+    </button>
+  </div>
+</div>
+
+<!-- Smart Search Overlay -->
+<div class="search-overlay" id="searchOverlay">
+  <div class="search-box">
+    <i class="fa fa-search"></i>
+    <input type="text" id="smartSearchInput" placeholder="ما الذي تبحث عنه؟" oninput="onSmartSearch(this.value)" autocomplete="off">
+    <button class="search-close" onclick="closeSearch()"><i class="fa fa-times"></i></button>
+  </div>
+  <div class="search-results" id="searchResults">
+    <div style="text-align:center; color:var(--txt2); grid-column:1/-1; padding-top:2rem;">ابحث عن أي شيء لتظهر النتائج هنا فوراً</div>
+  </div>
+</div>
+
+<!-- Cart Sidebar -->
+<div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
+<div class="cart-sidebar" id="cartSidebar">
+  <div class="cart-header">
+    <h2><i class="fa fa-shopping-bag"></i> سلة المشتريات</h2>
+    <button class="close-btn" onclick="closeCart()"><i class="fa fa-times"></i></button>
+  </div>
+  
+  <div class="shipping-progress">
+    <div class="sp-text">
+      <span id="spMsg">شحن مجاني عند تسوقك بـ 50,000 د</span>
+      <i class="fa fa-truck" style="color:var(--purple-l)"></i>
+    </div>
+    <div class="sp-bar-wrap">
+      <div class="sp-bar" id="spBar"></div>
+    </div>
+  </div>
+
+  <div class="cart-items" id="cartItems">
+    <div class="cart-empty"><i class="fa fa-shopping-bag"></i><p>سلتك تنتظر إبداعك</p></div>
+  </div>
+  
+  <div class="cross-sell" id="crossSellSection" style="display:none">
+    <h4>🔥 قد يعجبك أيضاً</h4>
+    <div class="cs-items" id="csItems"></div>
+  </div>
+
+  <div class="cart-footer" id="cartFooter" style="display:none">
+    <div class="cart-total">
+      <span>الإجمالي الكلي</span>
+      <span id="cartTotal">0 دينار</span>
+    </div>
+    <button class="checkout-btn" onclick="startCheckout()">
+      إتمام الطلب بأمان <i class="fa fa-arrow-left" style="margin-right:.5rem"></i>
+    </button>
+  </div>
+</div>
+
+<!-- Multi-step Checkout Modal -->
+<div class="modal-overlay" id="checkoutOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>إتمام الطلب</h2>
+      <button class="close-btn" onclick="closeCheckout()"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      
+      <div class="step-indicator">
+        <div class="step-progress" id="stepProgress"></div>
+        <div class="step-dot active" id="dot1">1</div>
+        <div class="step-dot" id="dot2">2</div>
+        <div class="step-dot" id="dot3">3</div>
+      </div>
+
+      <!-- Step 1: Personal Info -->
+      <div class="checkout-step active" id="step1">
+        <h3 style="margin-bottom:1.5rem; font-size:1.1rem;">المعلومات الشخصية</h3>
+        <div class="form-group" id="fgName">
+          <label>الاسم الكامل *</label>
+          <input type="text" id="custName" placeholder="محمد أحمد" oninput="validateStep1()">
+          <i class="fa fa-check-circle valid-icon"></i>
+        </div>
+        <div class="form-group" id="fgPhone">
+          <label>رقم الهاتف *</label>
+          <input type="tel" id="custPhone" placeholder="07xxxxxxxxx" oninput="validateStep1()">
+          <i class="fa fa-check-circle valid-icon"></i>
+        </div>
+        <div class="step-actions">
+          <button class="btn-next" id="btnNext1" onclick="nextStep(2)" disabled>متابعة التوصيل</button>
+        </div>
+      </div>
+
+      <!-- Step 2: Address & City -->
+      <div class="checkout-step" id="step2">
+        <h3 style="margin-bottom:1.5rem; font-size:1.1rem;">تفاصيل التوصيل</h3>
+        
+        <!-- City Selector -->
+        <div class="form-group" id="fgCity">
+          <label>المدينة *</label>
+          <div style="position:relative">
+            <select id="custCity" onchange="onCityChange()" style="width:100%;padding:1rem 1.2rem;background:var(--card);border:1px solid var(--border);border-radius:12px;color:var(--txt);font-family:inherit;font-size:1rem;outline:none;appearance:none;cursor:pointer;transition:0.3s">
+              <option value="">-- اختر مدينتك --</option>
+            </select>
+            <i class="fa fa-chevron-down" style="position:absolute;left:1.2rem;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--txt2)"></i>
+          </div>
+          <!-- Shipping Price Preview -->
+          <div id="shippingPreview" style="margin-top:0.7rem;padding:0.7rem 1rem;background:rgba(139,92,246,0.08);border-radius:10px;font-size:0.9rem;display:none">
+            <i class="fa fa-truck" style="color:var(--purple-l);margin-left:0.4rem"></i>
+            تكلفة التوصيل إلى <b id="spCity"></b>: <b id="spCityPrice" style="color:var(--purple-l)"></b>
+          </div>
+        </div>
+
+        <div class="form-group" id="fgAddress">
+          <label>العنوان التفصيلي *</label>
+          <textarea id="custAddress" rows="3" placeholder="المنطقة، الشارع، أقرب نقطة دالة..." oninput="validateStep2()"></textarea>
+          <i class="fa fa-check-circle valid-icon" style="top:4rem"></i>
+        </div>
+        <div class="form-group">
+          <label>ملاحظات إضافية (اختياري)</label>
+          <textarea id="custNotes" rows="2" placeholder="أوقات التوصيل المفضلة، تفاصيل أخرى..."></textarea>
+        </div>
+        <div class="step-actions">
+          <button class="btn-prev" onclick="nextStep(1)">رجوع</button>
+          <button class="btn-next" id="btnNext2" onclick="nextStep(3)" disabled>مراجعة الطلب</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Confirm -->
+      <div class="checkout-step" id="step3">
+        <h3 style="margin-bottom:1.5rem; font-size:1.1rem;">المراجعة النهائية</h3>
+        <div class="final-summary">
+          <div class="fs-row"><span>المنتجات (<span id="fsCount">0</span>):</span><span id="fsItemsTotal" style="font-weight:700">0 د</span></div>
+          <div class="fs-row"><span>التوصيل إلى <b id="fsCityName">-</b>:</span><span id="fsShipping" style="font-weight:700">0 د</span></div>
+          <div class="fs-total"><span>الإجمالي المطلوب:</span><span id="fsTotal" style="color:var(--purple-l)">0 د</span></div>
+        </div>
+        <p style="font-size:0.85rem; color:var(--txt2); margin-top:1.5rem; text-align:center;"><i class="fa fa-shield-alt" style="color:var(--green)"></i> الدفع يكون عند الاستلام لضمان حقك الكامل.</p>
+        <div class="step-actions">
+          <button class="btn-prev" onclick="nextStep(2)">رجوع</button>
+          <button class="btn-next" id="submitBtn" onclick="submitOrder()">تأكيد وإرسال الطلب</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="/js/features/globals.js"></script>
+<script src="/js/features/ui.js"></script>
+<script src="/js/features/search.js"></script>
+<script src="/js/features/products.js"></script>
+<script src="/js/features/cart.js"></script>
+<script src="/js/features/checkout.js"></script>
+<script src="/js/main.js"></script>
+</body>
+</html>

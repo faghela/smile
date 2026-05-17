@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>لوحة التحكم - Smile Shop</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="/config.js"></script>
+<link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+
+<!-- Login -->
+<div id="loginPage">
+<div class="login-card">
+  <div class="login-logo">😊 Smile Admin</div>
+  <div class="login-sub">لوحة تحكم المتجر</div>
+  <div class="fgrp"><label class="lbl">اسم المستخدم</label><input class="inp" type="text" id="uname" placeholder="admin" value="admin"></div>
+  <div class="fgrp"><label class="lbl">كلمة المرور</label><input class="inp" type="password" id="upass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+  <button class="btn-grad" onclick="doLogin()"><i class="fa fa-sign-in-alt" style="margin-left:.5rem"></i>تسجيل الدخول</button>
+</div>
+</div>
+
+<!-- Dashboard -->
+<div id="dashboard">
+<div class="layout">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sb-logo">😊 Smile Admin</div>
+    <nav class="sb-nav">
+      <div class="sb-item active" onclick="showTab('overview',this)"><i class="fa fa-chart-line"></i>الرئيسية</div>
+      <div class="sb-item" onclick="showTab('products',this)"><i class="fa fa-box"></i>المنتجات</div>
+      <div class="sb-item" onclick="showTab('orders',this)"><i class="fa fa-shopping-bag"></i>الطلبات</div>
+      <div class="sb-item" onclick="showTab('shipping',this)"><i class="fa fa-truck"></i>مناطق التوصيل</div>
+    </nav>
+    <div class="sb-logout"><button class="btn-out" onclick="doLogout()"><i class="fa fa-sign-out-alt" style="margin-left:.5rem"></i>تسجيل الخروج</button></div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+
+    <!-- Overview -->
+    <div class="tab-content active" id="tab-overview">
+      <div class="page-title">لوحة التحكم</div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-icon" style="background:rgba(124,58,237,.15);color:var(--purple)"><i class="fa fa-box"></i></div><div class="stat-info"><p>المنتجات</p><h3 id="s-products">-</h3></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:rgba(16,185,129,.15);color:var(--green)"><i class="fa fa-shopping-bag"></i></div><div class="stat-info"><p>الطلبات</p><h3 id="s-orders">-</h3></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:rgba(217,70,239,.15);color:var(--pink)"><i class="fa fa-coins"></i></div><div class="stat-info"><p>الإيرادات</p><h3 id="s-revenue">-</h3></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:rgba(245,158,11,.15);color:var(--yellow)"><i class="fa fa-clock"></i></div><div class="stat-info"><p>طلبات معلقة</p><h3 id="s-pending">-</h3></div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-bottom:1.2rem">
+        <div class="chart-card"><h3>الإيرادات - آخر 7 أيام</h3><canvas id="revenueChart" height="120"></canvas></div>
+        <div class="chart-card"><h3>الإيرادات الشهرية - آخر 6 أشهر</h3><canvas id="monthlyChart" height="120"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>⭐ أكثر المنتجات مبيعاً</h3>
+        <div id="topProductsList" style="margin-top:.8rem"></div>
+      </div>
+    </div>
+
+    <!-- Products -->
+    <div class="tab-content" id="tab-products">
+      <div class="tbl-head"><h2>إدارة المنتجات</h2><button class="btn-add" onclick="openProdModal()"><i class="fa fa-plus" style="margin-left:.4rem"></i>إضافة منتج</button></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>الصورة</th><th>الاسم</th><th>الفئة</th><th>السعر</th><th>المخزون</th><th>الإجراءات</th></tr></thead>
+          <tbody id="prodTbl"><tr><td colspan="6" class="no-data">جاري التحميل...</td></tr></tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <button class="btn-page" id="prodPrevBtn" onclick="chgProdPage(-1)">السابق</button>
+        <span style="font-size:0.9rem;" id="prodPageInfo">صفحة 1</span>
+        <button class="btn-page" id="prodNextBtn" onclick="chgProdPage(1)">التالي</button>
+      </div>
+    </div>
+
+    <!-- Orders -->
+    <div class="tab-content" id="tab-orders">
+      <div class="tbl-head">
+          <h2>إدارة الطلبات</h2>
+          <div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap">
+            <select id="exportStatus" class="status-sel" style="font-size:.85rem">
+              <option value="all">كل الحالات</option>
+              <option value="pending">معلق</option>
+              <option value="processing">قيد التجهيز</option>
+              <option value="shipped">في الطريق</option>
+              <option value="delivered">تم التوصيل</option>
+              <option value="cancelled">ملغي</option>
+            </select>
+            <input type="date" id="exportFrom" class="inp" style="padding:.35rem .7rem;font-size:.8rem;width:auto" title="من تاريخ">
+            <input type="date" id="exportTo" class="inp" style="padding:.35rem .7rem;font-size:.8rem;width:auto" title="إلى تاريخ">
+            <button class="btn-add" style="background:var(--green);" onclick="exportCSV()"><i class="fa fa-file-csv" style="margin-left:.4rem"></i>تصدير CSV</button>
+          </div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>العميل</th><th>الهاتف</th><th>المدينة</th><th>تفاصيل</th><th>الإجمالي</th><th>الحالة</th><th>التاريخ</th><th>حذف</th></tr></thead>
+          <tbody id="orderTbl"><tr><td colspan="8" class="no-data">جاري التحميل...</td></tr></tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <button class="btn-page" id="ordPrevBtn" onclick="chgOrdPage(-1)">السابق</button>
+        <span style="font-size:0.9rem;" id="ordPageInfo">صفحة 1</span>
+        <button class="btn-page" id="ordNextBtn" onclick="chgOrdPage(1)">التالي</button>
+      </div>
+    </div>
+
+    <!-- Shipping Zones -->
+    <div class="tab-content" id="tab-shipping">
+      <div class="tbl-head">
+        <h2>مناطق التوصيل</h2>
+        <button class="btn-add" onclick="openShippingModal()"><i class="fa fa-plus" style="margin-left:.4rem"></i>إضافة مدينة</button>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>المدينة</th><th>سعر التوصيل (دينار)</th><th>الإجراءات</th></tr></thead>
+          <tbody id="shippingTbl"><tr><td colspan="3" class="no-data">جاري التحميل...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- Product Modal -->
+<div class="modal-bg" id="prodModal">
+<div class="modal-box">
+  <div class="modal-hd"><span id="modalTitle">إضافة منتج</span><button class="close-x" onclick="closeProdModal()">✕</button></div>
+  <div class="modal-bd">
+    <input type="hidden" id="editId">
+    <div class="fgrp"><label class="lbl">اسم المنتج *</label><input class="inp" id="pName" placeholder="أدخل اسم المنتج"></div>
+    <div class="fgrp"><label class="lbl">الوصف *</label><textarea class="inp" id="pDesc" rows="2" placeholder="وصف المنتج"></textarea></div>
+    <div class="fgrp"><label class="lbl">الفئة</label><input class="inp" id="pCat" placeholder="مثال: إلكترونيات، ملابس..."></div>
+    <div class="fgrp"><label class="lbl">السعر (دينار) *</label><input class="inp" type="number" id="pPrice" placeholder="0"></div>
+    <div class="fgrp"><label class="lbl">المخزون</label><input class="inp" type="number" id="pStock" placeholder="0"></div>
+    
+    <div class="fgrp">
+      <label class="lbl">صورة المنتج</label>
+      <input type="hidden" id="pImgUrl">
+      <label class="file-upload-lbl" for="pFile">
+          <i class="fa fa-cloud-upload-alt fa-2x" style="margin-bottom:0.5rem"></i><br>
+          <span id="pFileName">انقر لاختيار صورة للرفع</span>
+      </label>
+      <input type="file" id="pFile" style="display:none" accept="image/*" onchange="handleFileSelect(this)">
+      <div style="text-align:center; margin: 0.5rem 0; color:var(--txt2); font-size:0.8rem">- أو -</div>
+      <input class="inp" id="pImgLink" placeholder="ضع رابط صورة خارجي (اختياري)">
+    </div>
+
+    <button class="btn-grad" id="saveProdBtn" onclick="saveProd()"><i class="fa fa-save" style="margin-left:.5rem"></i>حفظ المنتج</button>
+  </div>
+</div>
+</div>
+
+<!-- Order Modal -->
+<div class="modal-bg" id="orderModal">
+<div class="modal-box">
+  <div class="modal-hd"><span id="orderModalTitle">تفاصيل الطلب</span><button class="close-x" onclick="closeOrderModal()">✕</button></div>
+  <div class="modal-bd" id="orderModalBody" style="line-height:1.6; max-height: 60vh; overflow-y: auto;">
+    <!-- Populated via JS -->
+  </div>
+</div>
+</div>
+
+<!-- Shipping Modal -->
+<div class="modal-bg" id="shippingModal">
+<div class="modal-box">
+  <div class="modal-hd"><span id="shippingModalTitle">إضافة مدينة</span><button class="close-x" onclick="closeShippingModal()">✕</button></div>
+  <div class="modal-bd">
+    <input type="hidden" id="shippingEditId">
+    <div class="fgrp"><label class="lbl">اسم المدينة *</label><input class="inp" id="sCity" placeholder="مثال: طرابلس"></div>
+    <div class="fgrp"><label class="lbl">سعر التوصيل (دينار) *</label><input class="inp" type="number" id="sPrice" placeholder="0" min="0"></div>
+    <p style="font-size:0.82rem; color:var(--txt2); margin-bottom:1rem">ℹ️ ضع 0 لجعل التوصيل مجانياً لهذه المدينة.</p>
+    <button class="btn-grad" id="saveShippingBtn" onclick="saveShippingZone()"><i class="fa fa-save" style="margin-left:.5rem"></i>حفظ المنطقة</button>
+  </div>
+</div>
+</div>
+
+<div id="toasts"></div>
+
+<script src="/js/admin.js"></script>
+</body>
+</html>

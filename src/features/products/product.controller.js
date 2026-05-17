@@ -1,0 +1,118 @@
+const path = require('path');
+const fs = require('fs');
+const Product = require('./product.model');
+
+// Helper: حذف ملف الصورة المرفوعة محلياً إن وُجد
+function deleteLocalImage(imageUrl) {
+    if (!imageUrl || imageUrl.startsWith('http')) return; // رابط خارجي، تجاهل
+    // Note: __dirname is src/features/products. Go up to smile-shop/public
+    const filePath = path.join(__dirname, '../../../public', imageUrl);
+    fs.unlink(filePath, (err) => {
+        if (err && err.code !== 'ENOENT') {
+            console.error('[WARN] Failed to delete image file:', filePath, err.message);
+        }
+    });
+}
+
+const getCategories = async (req, res) => {
+    try {
+        const categories = await Product.distinct('category');
+        res.json(['الكل', ...categories.filter(Boolean).sort()]);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+const getProducts = async (req, res) => {
+    try {
+        const { category, search, page = 1, limit = 12 } = req.query;
+        const query = {};
+
+        if (category && category !== 'الكل') query.category = category;
+
+        if (search) {
+            query.$text = { $search: search };
+        }
+
+        const pageNum  = parseInt(page) || 1;
+        const limitNum = Math.min(parseInt(limit) || 12, 100);
+        const skip     = (pageNum - 1) * limitNum;
+
+        const [products, totalItems] = await Promise.all([
+            Product.find(query).sort({ createdAt: -1 }).skip(skip).limit(limitNum),
+            Product.countDocuments(query)
+        ]);
+
+        res.json({
+            data: products,
+            pagination: {
+                currentPage: pageNum,
+                totalPages: Math.ceil(totalItems / limitNum),
+                totalItems,
+                limit: limitNum
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+const getProductById = async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.id);
+        if (!product) return res.status(404).json({ message: 'المنتج غير موجود' });
+        res.json(product);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+const createProduct = async (req, res) => {
+    try {
+        const product = new Product(req.body);
+        await product.save();
+        res.status(201).json(product);
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+};
+
+const updateProduct = async (req, res) => {
+    try {
+        const old = await Product.findById(req.params.id);
+        if (!old) return res.status(404).json({ message: 'المنتج غير موجود' });
+
+        if (old.imageUrl && old.imageUrl !== req.body.imageUrl) {
+            deleteLocalImage(old.imageUrl);
+        }
+
+        const product = await Product.findByIdAndUpdate(
+            req.params.id, req.body, { new: true, runValidators: true }
+        );
+        res.json(product);
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+};
+
+const deleteProduct = async (req, res) => {
+    try {
+        const product = await Product.findByIdAndDelete(req.params.id);
+        if (!product) return res.status(404).json({ message: 'المنتج غير موجود' });
+
+        deleteLocalImage(product.imageUrl);
+
+        res.json({ success: true, message: 'تم حذف المنتج وملف صورته بنجاح' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+module.exports = {
+    getCategories,
+    getProducts,
+    getProductById,
+    createProduct,
+    updateProduct,
+    deleteProduct
+};
