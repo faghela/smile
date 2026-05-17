@@ -1,5 +1,6 @@
 const path = require('path');
 const fs = require('fs');
+const Joi = require('joi');
 const Product = require('./product.model');
 
 // Helper: حذف ملف الصورة المرفوعة محلياً إن وُجد
@@ -34,28 +35,22 @@ const getProducts = async (req, res) => {
             query.$text = { $search: search };
         }
 
-        const minRaw = typeof minPrice === 'string' ? minPrice : undefined;
-        const maxRaw = typeof maxPrice === 'string' ? maxPrice : undefined;
-        if (minPrice !== undefined && minRaw === undefined) {
-            return res.status(400).json({ message: 'الحد الأدنى للسعر غير صالح' });
+        const { value: priceValues, error: priceError } = Joi.object({
+            minPrice: Joi.number().min(0),
+            maxPrice: Joi.number().min(0)
+        }).validate({ minPrice, maxPrice }, { convert: true, abortEarly: true });
+        if (priceError) {
+            return res.status(400).json({ message: 'قيم السعر غير صالحة' });
         }
-        if (maxPrice !== undefined && maxRaw === undefined) {
-            return res.status(400).json({ message: 'الحد الأعلى للسعر غير صالح' });
+        const min = priceValues.minPrice;
+        const max = priceValues.maxPrice;
+        if (min !== undefined && max !== undefined && min > max) {
+            return res.status(400).json({ message: 'الحد الأدنى للسعر يجب أن يكون أقل من الحد الأعلى' });
         }
-        const min = Number(minRaw);
-        const max = Number(maxRaw);
-        const hasMin = minRaw !== undefined;
-        const hasMax = maxRaw !== undefined;
-        if (hasMin && !Number.isFinite(min)) {
-            return res.status(400).json({ message: 'الحد الأدنى للسعر غير صالح' });
-        }
-        if (hasMax && !Number.isFinite(max)) {
-            return res.status(400).json({ message: 'الحد الأعلى للسعر غير صالح' });
-        }
-        if (Number.isFinite(min) || Number.isFinite(max)) {
+        if (min !== undefined || max !== undefined) {
             query.price = {};
-            if (Number.isFinite(min)) query.price.$gte = min;
-            if (Number.isFinite(max)) query.price.$lte = max;
+            if (min !== undefined) query.price.$gte = min;
+            if (max !== undefined) query.price.$lte = max;
         }
 
         const pageNum  = parseInt(page) || 1;

@@ -34,14 +34,14 @@ function setMainImage(container, url, alt) {
   }
   const img = document.createElement('img');
   img.src = url;
-  img.alt = alt || 'product image';
+  img.alt = alt || 'صورة المنتج';
   container.appendChild(img);
 }
 
 function selectDetailImage(idx) {
   const main = document.getElementById('pmMainImage');
   const url = currentDetailImages[idx];
-  setMainImage(main, url, currentDetailProduct?.name || 'product image');
+  setMainImage(main, url, currentDetailProduct?.name || 'صورة المنتج');
   document.querySelectorAll('.pm-thumb').forEach((el, index) => {
     el.classList.toggle('active', index === idx);
   });
@@ -90,7 +90,7 @@ function openProductDetails(product) {
         btn.className = `pm-thumb ${idx === 0 ? 'active' : ''}`;
         const thumbImg = document.createElement('img');
         thumbImg.src = img;
-        thumbImg.alt = product.name || 'product image';
+        thumbImg.alt = product.name || 'صورة المنتج';
         btn.appendChild(thumbImg);
         btn.addEventListener('click', () => selectDetailImage(idx));
         thumbs.appendChild(btn);
