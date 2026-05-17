@@ -12,13 +12,6 @@ function getDetailImages(product) {
   return images;
 }
 
-function renderStars(avg) {
-  const filled = Math.round(avg);
-  return Array.from({ length: 5 }, (_, i) => (
-    `<i class="fa ${i < filled ? 'fa-star' : 'fa-regular fa-star'}"></i>`
-  )).join('');
-}
-
 function getRatingLabel(count) {
   if (count === 1) return 'تقييم';
   if (count === 2) return 'تقييمان';
@@ -101,9 +94,20 @@ function openProductDetails(product) {
   const avgRating = Number(product.ratingAverage) || 0;
   const ratingCount = Number(product.ratingCount) || 0;
   if (rating) {
-    rating.innerHTML = ratingCount > 0
-      ? `${renderStars(avgRating)} <span>${avgRating.toFixed(1)} (${ratingCount} ${getRatingLabel(ratingCount)})</span>`
-      : `<span>لا توجد تقييمات بعد</span>`;
+    rating.innerHTML = '';
+    if (ratingCount > 0) {
+      const filled = Math.round(avgRating);
+      for (let i = 0; i < 5; i++) {
+        const icon = document.createElement('i');
+        icon.className = `fa ${i < filled ? 'fa-star' : 'fa-regular fa-star'}`;
+        rating.appendChild(icon);
+      }
+      const label = document.createElement('span');
+      label.textContent = `${avgRating.toFixed(1)} (${ratingCount} ${getRatingLabel(ratingCount)})`;
+      rating.appendChild(label);
+    } else {
+      rating.textContent = 'لا توجد تقييمات بعد';
+    }
   }
 
   const baseSpecs = [
@@ -114,14 +118,30 @@ function openProductDetails(product) {
   const extraSpecs = Array.isArray(product.specs) ? product.specs : [];
   const allSpecs = [...baseSpecs, ...extraSpecs].filter(s => s && s.label && s.value);
   if (specs) {
-    specs.innerHTML = allSpecs.length
-      ? allSpecs.map(s => `<div class="pm-spec"><span>${s.label}</span><span>${s.value}</span></div>`).join('')
-      : '<div class="pm-empty">لا توجد مواصفات إضافية بعد</div>';
+    specs.innerHTML = '';
+    if (allSpecs.length) {
+      allSpecs.forEach(s => {
+        const row = document.createElement('div');
+        row.className = 'pm-spec';
+        const label = document.createElement('span');
+        label.textContent = s.label;
+        const value = document.createElement('span');
+        value.textContent = s.value;
+        row.appendChild(label);
+        row.appendChild(value);
+        specs.appendChild(row);
+      });
+    } else {
+      const empty = document.createElement('div');
+      empty.className = 'pm-empty';
+      empty.textContent = 'لا توجد مواصفات إضافية بعد';
+      specs.appendChild(empty);
+    }
   }
 
   if (reviews) {
-    reviews.innerHTML = ratingCount > 0
-      ? `آخر تقييمات العملاء تظهر هنا قريباً.`
+    reviews.textContent = ratingCount > 0
+      ? 'آخر تقييمات العملاء تظهر هنا قريباً.'
       : 'لا توجد تقييمات بعد — كن أول من يشارك رأيه.';
   }
 

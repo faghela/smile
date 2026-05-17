@@ -169,9 +169,10 @@ function parseSpecsList(value) {
     .map(line => line.trim())
     .filter(Boolean)
     .map(line => {
-      const [rawLabel, ...rest] = line.split(':');
-      const label = (rawLabel || '').trim();
-      const val = rest.join(':').trim();
+      const separatorIndex = line.indexOf(':');
+      if (separatorIndex === -1) return null;
+      const label = line.slice(0, separatorIndex).trim();
+      const val = line.slice(separatorIndex + 1).trim();
       if (!label || !val) return null;
       return { label, value: val };
     })

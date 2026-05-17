@@ -27,17 +27,26 @@ const getCategories = async (req, res) => {
 const getProducts = async (req, res) => {
     try {
         const { category, search, page = 1, limit = 12, minPrice, maxPrice, sort } = req.query;
-        const query = {};
+        const safeCategory = typeof category === 'string' ? category.trim() : '';
+        const safeSearch = typeof search === 'string' ? search.trim() : '';
+        if (safeCategory && /[$.]/.test(safeCategory)) {
+            return res.status(400).json({ message: 'الفئة غير صالحة' });
+        }
+        if (safeSearch && /[$.]/.test(safeSearch)) {
+            return res.status(400).json({ message: 'نص البحث غير صالح' });
+        }
 
-        if (category && category !== 'الكل') query.category = category;
-
-        if (search) {
-            query.$text = { $search: search };
+        let baseQuery = Product.find();
+        if (safeCategory && safeCategory !== 'الكل') {
+            baseQuery = baseQuery.where('category').equals(safeCategory);
+        }
+        if (safeSearch) {
+            baseQuery = baseQuery.where({ $text: { $search: safeSearch } });
         }
 
         const { value: priceValues, error: priceError } = Joi.object({
-            minPrice: Joi.number().min(0),
-            maxPrice: Joi.number().min(0)
+            minPrice: Joi.number().min(0).optional(),
+            maxPrice: Joi.number().min(0).optional()
         }).validate({ minPrice, maxPrice }, { convert: true, abortEarly: true });
         if (priceError) {
             return res.status(400).json({ message: 'قيم السعر غير صالحة' });
@@ -48,9 +57,8 @@ const getProducts = async (req, res) => {
             return res.status(400).json({ message: 'الحد الأدنى للسعر يجب أن يكون أقل من الحد الأعلى' });
         }
         if (min !== undefined || max !== undefined) {
-            query.price = {};
-            if (min !== undefined) query.price.$gte = min;
-            if (max !== undefined) query.price.$lte = max;
+            if (min !== undefined) baseQuery = baseQuery.where('price').gte(min);
+            if (max !== undefined) baseQuery = baseQuery.where('price').lte(max);
         }
 
         const pageNum  = parseInt(page) || 1;
@@ -64,8 +72,8 @@ const getProducts = async (req, res) => {
         if (sort === 'top') sortBy = { soldCount: -1, createdAt: -1 };
 
         const [products, totalItems] = await Promise.all([
-            Product.find(query).sort(sortBy).skip(skip).limit(limitNum),
-            Product.countDocuments(query)
+            baseQuery.clone().sort(sortBy).skip(skip).limit(limitNum),
+            baseQuery.clone().countDocuments()
         ]);
 
         res.json({
