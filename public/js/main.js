@@ -1,5 +1,6 @@
 // --- Init ---
 updateCartUI();
+initFilters();
 fetchProducts();
 // تحديث ملخص السعر عند الانتقال للخطوة 3
 document.addEventListener('click', e => {

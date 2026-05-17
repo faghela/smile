@@ -148,6 +148,29 @@
       <input class="inp" id="pImgLink" placeholder="ضع رابط صورة خارجي (اختياري)">
     </div>
 
+    <div class="fgrp">
+      <label class="lbl">صور إضافية (اختياري)</label>
+      <input class="inp" id="pImages" placeholder="روابط صور مفصولة بفواصل">
+      <div class="hint-text">مثال: https://.../1.jpg,https://.../2.jpg</div>
+    </div>
+
+    <div class="fgrp">
+      <label class="lbl" for="pSpecs">مواصفات المنتج (اختياري)</label>
+      <textarea class="inp" id="pSpecs" rows="3" placeholder="المواصفة:القيمة (سطر لكل مواصفة)"></textarea>
+      <div class="hint-text">يتم الفصل بأول ":" فقط، وما بعده يُحفظ كقيمة</div>
+    </div>
+
+    <div class="fgrp" style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem">
+      <div>
+        <label class="lbl">متوسط التقييم</label>
+        <input class="inp" id="pRatingAvg" type="number" min="0" max="5" step="0.1" placeholder="4.5">
+      </div>
+      <div>
+        <label class="lbl">عدد التقييمات</label>
+        <input class="inp" id="pRatingCount" type="number" min="0" placeholder="0">
+      </div>
+    </div>
+
     <button class="btn-grad" id="saveProdBtn" onclick="saveProd()"><i class="fa fa-save" style="margin-left:.5rem"></i>حفظ المنتج</button>
   </div>
 </div>

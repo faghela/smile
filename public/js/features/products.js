@@ -4,8 +4,11 @@ async function fetchProducts(append = false) {
       currentPage = 1;
       document.getElementById('productsGrid').innerHTML = '<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>';
   }
-  let url = `${API}/products?page=${currentPage}&limit=12&`;
-  if(currentCat !== 'الكل') url += `category=${encodeURIComponent(currentCat)}`;
+  let url = `${API}/products?page=${currentPage}&limit=12`;
+  if(currentCat !== 'الكل') url += `&category=${encodeURIComponent(currentCat)}`;
+  if (currentSort) url += `&sort=${encodeURIComponent(currentSort)}`;
+  if (currentMinPrice) url += `&minPrice=${encodeURIComponent(currentMinPrice)}`;
+  if (currentMaxPrice) url += `&maxPrice=${encodeURIComponent(currentMaxPrice)}`;
   try {
     const res = await fetch(url);
     const result = await res.json();
@@ -67,8 +70,7 @@ function handleCardClick(e, p) {
   if (e.target.closest('.add-btn')) {
     if(p.stock > 0) addToCart(p);
   } else {
-    // Normally would open a product details page/modal here
-    if(p.stock > 0) addToCart(p);
+    openProductDetails(p);
   }
 }
 
@@ -87,4 +89,49 @@ function filterCat(cat, el) {
   document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
   el.classList.add('active');
   fetchProducts();
+}
+
+function applyFilters() {
+  const minEl = document.getElementById('minPrice');
+  const maxEl = document.getElementById('maxPrice');
+  const sortEl = document.getElementById('sortSelect');
+  if (!minEl || !maxEl || !sortEl) return;
+
+  const min = minEl.value.trim();
+  const max = maxEl.value.trim();
+  if (min && max && Number(min) > Number(max)) {
+    showToast('تأكد أن الحد الأدنى أقل من الحد الأعلى', 'error');
+    return;
+  }
+
+  currentMinPrice = min;
+  currentMaxPrice = max;
+  currentSort = sortEl.value || 'newest';
+  fetchProducts();
+}
+
+function resetFilters() {
+  const minEl = document.getElementById('minPrice');
+  const maxEl = document.getElementById('maxPrice');
+  const sortEl = document.getElementById('sortSelect');
+  if (minEl) minEl.value = '';
+  if (maxEl) maxEl.value = '';
+  if (sortEl) sortEl.value = 'newest';
+  currentMinPrice = '';
+  currentMaxPrice = '';
+  currentSort = 'newest';
+  fetchProducts();
+}
+
+function initFilters() {
+  const minEl = document.getElementById('minPrice');
+  const maxEl = document.getElementById('maxPrice');
+  const sortEl = document.getElementById('sortSelect');
+  if (sortEl) sortEl.value = currentSort;
+  [minEl, maxEl].forEach(el => {
+    if (!el) return;
+    el.addEventListener('keydown', e => {
+      if (e.key === 'Enter') applyFilters();
+    });
+  });
 }

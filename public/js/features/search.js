@@ -28,5 +28,6 @@ async function onSmartSearch(val) {
 function openSearchProduct(id) {
   closeSearch();
   const p = allProducts.find(x => x._id === id);
-  if(p) addToCart(p);
+  if(p) openProductDetails(p);
+  else openProductDetailsById(id);
 }

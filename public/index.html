@@ -46,6 +46,30 @@
   <button class="cat-btn active" onclick="filterCat('الكل',this)">الكل</button>
 </div>
 
+<div class="filters" id="filtersBar">
+  <div class="filter-group">
+    <label>فرز</label>
+    <select id="sortSelect" onchange="applyFilters()">
+      <option value="newest">الأحدث</option>
+      <option value="top">الأكثر مبيعاً</option>
+      <option value="price_asc">الأقل سعراً</option>
+      <option value="price_desc">الأعلى سعراً</option>
+    </select>
+  </div>
+  <div class="filter-group price-range">
+    <label>السعر</label>
+    <div class="price-inputs">
+      <input type="number" id="minPrice" placeholder="من" min="0" aria-label="الحد الأدنى للسعر">
+      <span>—</span>
+      <input type="number" id="maxPrice" placeholder="إلى" min="0" aria-label="الحد الأعلى للسعر">
+    </div>
+    <div class="filter-actions">
+      <button class="filter-btn" onclick="applyFilters()">تطبيق</button>
+      <button class="filter-btn ghost" onclick="resetFilters()">إعادة</button>
+    </div>
+  </div>
+</div>
+
 <div class="products-section">
   <div class="products-grid" id="productsGrid" onmousemove="handleCardsGlow(event)">
     <div class="skeleton"></div><div class="skeleton"></div>
@@ -105,6 +129,11 @@
     <button class="checkout-btn" onclick="startCheckout()">
       إتمام الطلب بأمان <i class="fa fa-arrow-left" style="margin-right:.5rem"></i>
     </button>
+    <div class="checkout-benefits">
+      <div><i class="fa fa-shield-alt"></i> ضمان جودة موثوق</div>
+      <div><i class="fa fa-undo"></i> استرجاع مرن وسريع</div>
+      <div><i class="fa fa-truck"></i> شحن سريع لكل المدن</div>
+    </div>
   </div>
 </div>
 
@@ -196,12 +225,44 @@
   </div>
 </div>
 
+<!-- Product Details Modal -->
+<div class="product-modal-overlay" id="productOverlay" onclick="closeProductDetails()"></div>
+<div class="product-modal" id="productModal">
+  <button class="pm-close" onclick="closeProductDetails()"><i class="fa fa-times"></i></button>
+  <div class="pm-body">
+    <div class="pm-gallery">
+      <div class="pm-main" id="pmMainImage"></div>
+      <div class="pm-thumbs" id="pmThumbs"></div>
+    </div>
+    <div class="pm-info">
+      <div class="pm-cat" id="pmCategory"></div>
+      <h2 id="pmTitle"></h2>
+      <div class="pm-rating" id="pmRating"></div>
+      <div class="pm-price" id="pmPrice"></div>
+      <div class="pm-stock" id="pmStock"></div>
+      <p class="pm-desc" id="pmDesc"></p>
+      <div class="pm-actions">
+        <button class="pm-add" id="pmAddBtn" onclick="addDetailToCart()"><i class="fa fa-shopping-bag"></i> إضافة للسلة</button>
+      </div>
+      <div class="pm-section">
+        <h4>المواصفات</h4>
+        <div class="pm-specs" id="pmSpecs"></div>
+      </div>
+      <div class="pm-section">
+        <h4>التقييمات</h4>
+        <div class="pm-reviews" id="pmReviews"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="/js/features/globals.js"></script>
 <script src="/js/features/ui.js"></script>
 <script src="/js/features/search.js"></script>
 <script src="/js/features/products.js"></script>
 <script src="/js/features/cart.js"></script>
 <script src="/js/features/checkout.js"></script>
+<script src="/js/features/product-details.js"></script>
 <script src="/js/main.js"></script>
 </body>
 </html>

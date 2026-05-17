@@ -7,4 +7,7 @@ let selectedShippingPrice = 0;
 let currentCat = 'الكل';
 let currentPage = 1;
 let hasMoreProducts = true;
+let currentSort = 'newest';
+let currentMinPrice = '';
+let currentMaxPrice = '';
 const FREE_SHIPPING_THRESHOLD = 50000; // عتبة الشحن المجاني

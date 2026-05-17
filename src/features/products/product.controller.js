@@ -1,5 +1,6 @@
 const path = require('path');
 const fs = require('fs');
+const Joi = require('joi');
 const Product = require('./product.model');
 
 // Helper: حذف ملف الصورة المرفوعة محلياً إن وُجد
@@ -25,22 +26,54 @@ const getCategories = async (req, res) => {
 
 const getProducts = async (req, res) => {
     try {
-        const { category, search, page = 1, limit = 12 } = req.query;
-        const query = {};
+        const { category, search, page = 1, limit = 12, minPrice, maxPrice, sort } = req.query;
+        const safeCategory = typeof category === 'string' ? category.trim() : '';
+        const safeSearch = typeof search === 'string' ? search.trim() : '';
+        if (safeCategory && /[$.]/.test(safeCategory)) {
+            return res.status(400).json({ message: 'الفئة تحتوي على أحرف غير مسموحة' });
+        }
+        if (safeSearch && /[$.]/.test(safeSearch)) {
+            return res.status(400).json({ message: 'نص البحث يحتوي على أحرف غير مسموحة' });
+        }
 
-        if (category && category !== 'الكل') query.category = category;
+        let baseQuery = Product.find();
+        if (safeCategory && safeCategory !== 'الكل') {
+            baseQuery = baseQuery.where('category').equals(safeCategory);
+        }
+        if (safeSearch) {
+            baseQuery = baseQuery.where({ $text: { $search: safeSearch } });
+        }
 
-        if (search) {
-            query.$text = { $search: search };
+        const { value: priceValues, error: priceError } = Joi.object({
+            minPrice: Joi.number().min(0).optional(),
+            maxPrice: Joi.number().min(0).optional()
+        }).validate({ minPrice, maxPrice }, { convert: true, abortEarly: true });
+        if (priceError) {
+            return res.status(400).json({ message: 'قيم السعر غير صالحة' });
+        }
+        const min = priceValues.minPrice;
+        const max = priceValues.maxPrice;
+        if (min !== undefined && max !== undefined && min > max) {
+            return res.status(400).json({ message: 'الحد الأدنى للسعر يجب أن يكون أقل من الحد الأعلى' });
+        }
+        if (min !== undefined || max !== undefined) {
+            if (min !== undefined) baseQuery = baseQuery.where('price').gte(min);
+            if (max !== undefined) baseQuery = baseQuery.where('price').lte(max);
         }
 
         const pageNum  = parseInt(page) || 1;
         const limitNum = Math.min(parseInt(limit) || 12, 100);
         const skip     = (pageNum - 1) * limitNum;
 
+        let sortBy = { createdAt: -1 };
+        if (sort === 'newest') sortBy = { createdAt: -1 };
+        if (sort === 'price_asc') sortBy = { price: 1, createdAt: -1 };
+        if (sort === 'price_desc') sortBy = { price: -1, createdAt: -1 };
+        if (sort === 'top') sortBy = { soldCount: -1, createdAt: -1 };
+
         const [products, totalItems] = await Promise.all([
-            Product.find(query).sort({ createdAt: -1 }).skip(skip).limit(limitNum),
-            Product.countDocuments(query)
+            baseQuery.clone().sort(sortBy).skip(skip).limit(limitNum),
+            baseQuery.clone().countDocuments()
         ]);
 
         res.json({
