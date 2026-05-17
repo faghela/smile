@@ -37,7 +37,7 @@ const createOrder = async (req, res) => {
         for (const item of itemsToUpdate) {
             const updatedProduct = await Product.findOneAndUpdate(
                 { _id: item.productId, stock: { $gte: item.quantity } },
-                { $inc: { stock: -item.quantity } },
+                { $inc: { stock: -item.quantity, soldCount: item.quantity } },
                 { new: true }
             );
 
@@ -60,7 +60,7 @@ const createOrder = async (req, res) => {
 
     } catch (err) {
         for (const item of deductedProducts) {
-            await Product.findByIdAndUpdate(item.productId, { $inc: { stock: item.quantity } }).catch(e => {
+            await Product.findByIdAndUpdate(item.productId, { $inc: { stock: item.quantity, soldCount: -item.quantity } }).catch(e => {
                 console.error(`[CRITICAL] Failed to rollback stock for product ${item.productId}:`, e);
             });
         }

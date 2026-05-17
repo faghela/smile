@@ -14,6 +14,19 @@ const productSchema = Joi.object({
     }),
     category: Joi.string().allow('', null).default('عام'),
     imageUrl: Joi.string().allow('', null),
+    images: Joi.array().items(Joi.string().allow('', null)).default([]),
+    specs: Joi.array().items(
+        Joi.object({
+            label: Joi.string().trim().required().messages({
+                'string.empty': 'اسم المواصفة مطلوب'
+            }),
+            value: Joi.string().trim().required().messages({
+                'string.empty': 'قيمة المواصفة مطلوبة'
+            })
+        })
+    ).default([]),
+    ratingAverage: Joi.number().min(0).max(5).default(0),
+    ratingCount: Joi.number().integer().min(0).default(0),
     stock: Joi.number().integer().min(0).default(0).messages({
         'number.base': 'المخزون يجب أن يكون رقماً',
         'number.min': 'المخزون لا يمكن أن يكون سالباً'

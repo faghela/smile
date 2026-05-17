@@ -158,6 +158,29 @@ function handleFileSelect(input) {
     }
 }
 
+function parseImageList(value) {
+  if (!value) return [];
+  return value.split(',').map(s => s.trim()).filter(Boolean);
+}
+
+function parseSpecsList(value) {
+  if (!value || !value.trim()) return [];
+  return value.split('\n')
+    .map(line => line.trim())
+    .filter(Boolean)
+    .map(line => {
+      const [label, ...rest] = line.split(':');
+      if (!label || !rest.length) return null;
+      return { label: label.trim(), value: rest.join(':').trim() };
+    })
+    .filter(Boolean);
+}
+
+function formatSpecsList(specs) {
+  if (!Array.isArray(specs)) return '';
+  return specs.map(s => `${s.label}: ${s.value}`).join('\n');
+}
+
 function openProdModal(p=null){
   document.getElementById('modalTitle').textContent = p ? 'تعديل منتج' : 'إضافة منتج';
   document.getElementById('editId').value = p?p._id:'';
@@ -168,6 +191,10 @@ function openProdModal(p=null){
   document.getElementById('pStock').value = p?p.stock:'';
   document.getElementById('pImgUrl').value = p?p.imageUrl:'';
   document.getElementById('pImgLink').value = p && p.imageUrl && p.imageUrl.startsWith('http') ? p.imageUrl : '';
+  document.getElementById('pImages').value = p && Array.isArray(p.images) ? p.images.join(', ') : '';
+  document.getElementById('pSpecs').value = p && Array.isArray(p.specs) ? formatSpecsList(p.specs) : '';
+  document.getElementById('pRatingAvg').value = p && p.ratingAverage !== undefined ? p.ratingAverage : '';
+  document.getElementById('pRatingCount').value = p && p.ratingCount !== undefined ? p.ratingCount : '';
   
   document.getElementById('pFile').value = '';
   document.getElementById('pFileName').textContent = p && p.imageUrl && !p.imageUrl.startsWith('http') ? 'ملف مرفوع مسبقاً' : 'انقر لاختيار صورة للرفع';
@@ -185,6 +212,10 @@ async function saveProd(){
       const id = document.getElementById('editId').value;
       const fileInput = document.getElementById('pFile');
       let finalImageUrl = document.getElementById('pImgLink').value.trim() || document.getElementById('pImgUrl').value;
+      const ratingAvgRaw = document.getElementById('pRatingAvg').value.trim();
+      const ratingCountRaw = document.getElementById('pRatingCount').value.trim();
+      const ratingAverage = Number.isNaN(Number(ratingAvgRaw)) || ratingAvgRaw === '' ? 0 : Number(ratingAvgRaw);
+      const ratingCount = Number.isNaN(Number(ratingCountRaw)) || ratingCountRaw === '' ? 0 : Number(ratingCountRaw);
 
       // 1. Upload File if selected
       if (fileInput.files && fileInput.files[0]) {
@@ -208,7 +239,11 @@ async function saveProd(){
         category:document.getElementById('pCat').value.trim()||'عام',
         price:+document.getElementById('pPrice').value,
         stock:+document.getElementById('pStock').value,
-        imageUrl: finalImageUrl
+        imageUrl: finalImageUrl,
+        images: parseImageList(document.getElementById('pImages').value),
+        specs: parseSpecsList(document.getElementById('pSpecs').value),
+        ratingAverage,
+        ratingCount
       };
       
       const url = id ? `${API}/products/${id}` : `${API}/products`;

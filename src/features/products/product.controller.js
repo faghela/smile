@@ -25,7 +25,7 @@ const getCategories = async (req, res) => {
 
 const getProducts = async (req, res) => {
     try {
-        const { category, search, page = 1, limit = 12 } = req.query;
+        const { category, search, page = 1, limit = 12, minPrice, maxPrice, sort } = req.query;
         const query = {};
 
         if (category && category !== 'الكل') query.category = category;
@@ -34,12 +34,25 @@ const getProducts = async (req, res) => {
             query.$text = { $search: search };
         }
 
+        const min = Number(minPrice);
+        const max = Number(maxPrice);
+        if (!Number.isNaN(min) || !Number.isNaN(max)) {
+            query.price = {};
+            if (!Number.isNaN(min)) query.price.$gte = min;
+            if (!Number.isNaN(max)) query.price.$lte = max;
+        }
+
         const pageNum  = parseInt(page) || 1;
         const limitNum = Math.min(parseInt(limit) || 12, 100);
         const skip     = (pageNum - 1) * limitNum;
 
+        let sortBy = { createdAt: -1 };
+        if (sort === 'price_asc') sortBy = { price: 1, createdAt: -1 };
+        if (sort === 'price_desc') sortBy = { price: -1, createdAt: -1 };
+        if (sort === 'top') sortBy = { soldCount: -1, createdAt: -1 };
+
         const [products, totalItems] = await Promise.all([
-            Product.find(query).sort({ createdAt: -1 }).skip(skip).limit(limitNum),
+            Product.find(query).sort(sortBy).skip(skip).limit(limitNum),
             Product.countDocuments(query)
         ]);
 
