@@ -30,10 +30,10 @@ const getProducts = async (req, res) => {
         const safeCategory = typeof category === 'string' ? category.trim() : '';
         const safeSearch = typeof search === 'string' ? search.trim() : '';
         if (safeCategory && /[$.]/.test(safeCategory)) {
-            return res.status(400).json({ message: 'الفئة غير صالحة' });
+            return res.status(400).json({ message: 'الفئة تحتوي على أحرف غير مسموحة' });
         }
         if (safeSearch && /[$.]/.test(safeSearch)) {
-            return res.status(400).json({ message: 'نص البحث غير صالح' });
+            return res.status(400).json({ message: 'نص البحث يحتوي على أحرف غير مسموحة' });
         }
 
         let baseQuery = Product.find();

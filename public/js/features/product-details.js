@@ -1,5 +1,7 @@
 let currentDetailProduct = null;
 let currentDetailImages = [];
+const STAR_FILLED_CLASS = 'fa fa-star';
+const STAR_EMPTY_CLASS = 'fa-regular fa-star';
 
 function getDetailImages(product) {
   const images = [];
@@ -99,7 +101,7 @@ function openProductDetails(product) {
       const filled = Math.round(avgRating);
       for (let i = 0; i < 5; i++) {
         const icon = document.createElement('i');
-        icon.className = `fa ${i < filled ? 'fa-star' : 'fa-regular fa-star'}`;
+        icon.className = i < filled ? STAR_FILLED_CLASS : STAR_EMPTY_CLASS;
         rating.appendChild(icon);
       }
       const label = document.createElement('span');
