@@ -169,9 +169,11 @@ function parseSpecsList(value) {
     .map(line => line.trim())
     .filter(Boolean)
     .map(line => {
-      const [label, ...rest] = line.split(':');
-      if (!label || !rest.length) return null;
-      return { label: label.trim(), value: rest.join(':').trim() };
+      const [rawLabel, ...rest] = line.split(':');
+      const label = (rawLabel || '').trim();
+      const val = rest.join(':').trim();
+      if (!label || !val) return null;
+      return { label, value: val };
     })
     .filter(Boolean);
 }
@@ -191,7 +193,7 @@ function openProdModal(p=null){
   document.getElementById('pStock').value = p?p.stock:'';
   document.getElementById('pImgUrl').value = p?p.imageUrl:'';
   document.getElementById('pImgLink').value = p && p.imageUrl && p.imageUrl.startsWith('http') ? p.imageUrl : '';
-  document.getElementById('pImages').value = p && Array.isArray(p.images) ? p.images.join(', ') : '';
+  document.getElementById('pImages').value = p && Array.isArray(p.images) ? p.images.join(',') : '';
   document.getElementById('pSpecs').value = p && Array.isArray(p.specs) ? formatSpecsList(p.specs) : '';
   document.getElementById('pRatingAvg').value = p && p.ratingAverage !== undefined ? p.ratingAverage : '';
   document.getElementById('pRatingCount').value = p && p.ratingCount !== undefined ? p.ratingCount : '';

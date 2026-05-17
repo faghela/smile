@@ -34,10 +34,18 @@ const getProducts = async (req, res) => {
             query.$text = { $search: search };
         }
 
-        const min = Number(minPrice);
-        const max = Number(maxPrice);
-        const hasMin = minPrice !== undefined;
-        const hasMax = maxPrice !== undefined;
+        const minRaw = typeof minPrice === 'string' ? minPrice : undefined;
+        const maxRaw = typeof maxPrice === 'string' ? maxPrice : undefined;
+        if (minPrice !== undefined && minRaw === undefined) {
+            return res.status(400).json({ message: 'الحد الأدنى للسعر غير صالح' });
+        }
+        if (maxPrice !== undefined && maxRaw === undefined) {
+            return res.status(400).json({ message: 'الحد الأعلى للسعر غير صالح' });
+        }
+        const min = Number(minRaw);
+        const max = Number(maxRaw);
+        const hasMin = minRaw !== undefined;
+        const hasMax = maxRaw !== undefined;
         if (hasMin && !Number.isFinite(min)) {
             return res.status(400).json({ message: 'الحد الأدنى للسعر غير صالح' });
         }
@@ -55,6 +63,7 @@ const getProducts = async (req, res) => {
         const skip     = (pageNum - 1) * limitNum;
 
         let sortBy = { createdAt: -1 };
+        if (sort === 'newest') sortBy = { createdAt: -1 };
         if (sort === 'price_asc') sortBy = { price: 1, createdAt: -1 };
         if (sort === 'price_desc') sortBy = { price: -1, createdAt: -1 };
         if (sort === 'top') sortBy = { soldCount: -1, createdAt: -1 };

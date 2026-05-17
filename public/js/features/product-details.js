@@ -25,12 +25,23 @@ function getRatingLabel(count) {
   return 'تقييمات';
 }
 
-function selectDetailImage(url, idx) {
-  const decodedUrl = url ? decodeURIComponent(url) : '';
-  const main = document.getElementById('pmMainImage');
-  if (main) {
-    main.innerHTML = decodedUrl ? `<img src="${decodedUrl}" alt="product image">` : '🛍️';
+function setMainImage(container, url, alt) {
+  if (!container) return;
+  container.innerHTML = '';
+  if (!url) {
+    container.textContent = '🛍️';
+    return;
   }
+  const img = document.createElement('img');
+  img.src = url;
+  img.alt = alt || 'product image';
+  container.appendChild(img);
+}
+
+function selectDetailImage(idx) {
+  const main = document.getElementById('pmMainImage');
+  const url = currentDetailImages[idx];
+  setMainImage(main, url, currentDetailProduct?.name || 'product image');
   document.querySelectorAll('.pm-thumb').forEach((el, index) => {
     el.classList.toggle('active', index === idx);
   });
@@ -68,22 +79,22 @@ function openProductDetails(product) {
   if (addBtn) addBtn.disabled = product.stock === 0;
 
   if (mainImage) {
-    if (currentDetailImages.length) {
-      mainImage.innerHTML = `<img src="${currentDetailImages[0]}" alt="${product.name}">`;
-    } else {
-      mainImage.textContent = '🛍️';
-    }
+    setMainImage(mainImage, currentDetailImages[0], product.name);
   }
 
   if (thumbs) {
-    if (!currentDetailImages.length) {
-      thumbs.innerHTML = '';
-    } else {
-      thumbs.innerHTML = currentDetailImages.map((img, idx) => `
-        <button class="pm-thumb ${idx === 0 ? 'active' : ''}" onclick="selectDetailImage('${encodeURIComponent(img)}', ${idx})">
-          <img src="${img}" alt="${product.name}">
-        </button>
-      `).join('');
+    thumbs.innerHTML = '';
+    if (currentDetailImages.length) {
+      currentDetailImages.forEach((img, idx) => {
+        const btn = document.createElement('button');
+        btn.className = `pm-thumb ${idx === 0 ? 'active' : ''}`;
+        const thumbImg = document.createElement('img');
+        thumbImg.src = img;
+        thumbImg.alt = product.name || 'product image';
+        btn.appendChild(thumbImg);
+        btn.addEventListener('click', () => selectDetailImage(idx));
+        thumbs.appendChild(btn);
+      });
     }
   }
 
