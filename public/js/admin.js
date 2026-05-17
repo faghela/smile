@@ -214,8 +214,14 @@ async function saveProd(){
       let finalImageUrl = document.getElementById('pImgLink').value.trim() || document.getElementById('pImgUrl').value;
       const ratingAvgRaw = document.getElementById('pRatingAvg').value.trim();
       const ratingCountRaw = document.getElementById('pRatingCount').value.trim();
-      const ratingAverage = Number.isNaN(Number(ratingAvgRaw)) || ratingAvgRaw === '' ? 0 : Number(ratingAvgRaw);
-      const ratingCount = Number.isNaN(Number(ratingCountRaw)) || ratingCountRaw === '' ? 0 : Number(ratingCountRaw);
+      const ratingAverage = ratingAvgRaw === '' ? 0 : Number(ratingAvgRaw);
+      const ratingCount = ratingCountRaw === '' ? 0 : Number(ratingCountRaw);
+      if (Number.isNaN(ratingAverage) || ratingAverage < 0 || ratingAverage > 5) {
+        throw new Error('متوسط التقييم يجب أن يكون بين 0 و 5');
+      }
+      if (Number.isNaN(ratingCount) || ratingCount < 0) {
+        throw new Error('عدد التقييمات غير صالح');
+      }
 
       // 1. Upload File if selected
       if (fileInput.files && fileInput.files[0]) {

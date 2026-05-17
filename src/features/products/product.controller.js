@@ -36,10 +36,18 @@ const getProducts = async (req, res) => {
 
         const min = Number(minPrice);
         const max = Number(maxPrice);
-        if (!Number.isNaN(min) || !Number.isNaN(max)) {
+        const hasMin = minPrice !== undefined;
+        const hasMax = maxPrice !== undefined;
+        if (hasMin && !Number.isFinite(min)) {
+            return res.status(400).json({ message: 'الحد الأدنى للسعر غير صالح' });
+        }
+        if (hasMax && !Number.isFinite(max)) {
+            return res.status(400).json({ message: 'الحد الأعلى للسعر غير صالح' });
+        }
+        if (Number.isFinite(min) || Number.isFinite(max)) {
             query.price = {};
-            if (!Number.isNaN(min)) query.price.$gte = min;
-            if (!Number.isNaN(max)) query.price.$lte = max;
+            if (Number.isFinite(min)) query.price.$gte = min;
+            if (Number.isFinite(max)) query.price.$lte = max;
         }
 
         const pageNum  = parseInt(page) || 1;

@@ -209,6 +209,7 @@ header { position: sticky; top: 0; z-index: 100; background: var(--glass); backd
 .pm-spec { display: flex; justify-content: space-between; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 0.6rem 0.8rem; font-size: 0.85rem; }
 .pm-spec span:first-child { color: var(--txt2); }
 .pm-reviews { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 0.8rem; font-size: 0.85rem; color: var(--txt2); }
+.pm-empty { background: rgba(255,255,255,0.03); border: 1px dashed var(--border); border-radius: 12px; padding: 0.8rem; font-size: 0.85rem; color: var(--txt2); text-align: center; }
 
 /* Multi-step Checkout Modal */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); z-index: 300; display: flex; align-items: center; justify-content: center; padding: 1rem; opacity: 0; pointer-events: none; transition: 0.4s; }

@@ -24,7 +24,7 @@ const createOrder = async (req, res) => {
         
         totalPrice += product.price * item.quantity;
         itemsToUpdate.push({
-            productId: item.productId,
+            productId: product._id,
             name: product.name,
             price: product.price,
             quantity: item.quantity,

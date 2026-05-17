@@ -19,6 +19,12 @@ function renderStars(avg) {
   )).join('');
 }
 
+function getRatingLabel(count) {
+  if (count === 1) return 'تقييم';
+  if (count === 2) return 'تقييمان';
+  return 'تقييمات';
+}
+
 function selectDetailImage(url, idx) {
   const decodedUrl = url ? decodeURIComponent(url) : '';
   const main = document.getElementById('pmMainImage');
@@ -85,7 +91,7 @@ function openProductDetails(product) {
   const ratingCount = Number(product.ratingCount) || 0;
   if (rating) {
     rating.innerHTML = ratingCount > 0
-      ? `${renderStars(avgRating)} <span>${avgRating.toFixed(1)} (${ratingCount} تقييم)</span>`
+      ? `${renderStars(avgRating)} <span>${avgRating.toFixed(1)} (${ratingCount} ${getRatingLabel(ratingCount)})</span>`
       : `<span>لا توجد تقييمات بعد</span>`;
   }
 
@@ -99,7 +105,7 @@ function openProductDetails(product) {
   if (specs) {
     specs.innerHTML = allSpecs.length
       ? allSpecs.map(s => `<div class="pm-spec"><span>${s.label}</span><span>${s.value}</span></div>`).join('')
-      : '<div class="pm-reviews">لا توجد مواصفات إضافية بعد</div>';
+      : '<div class="pm-empty">لا توجد مواصفات إضافية بعد</div>';
   }
 
   if (reviews) {
